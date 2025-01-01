@@ -248,8 +248,11 @@ func (room *Room) broadcast(message []byte, sender *Client) {
 			targetUsername := parts[0]
 			privateMessage := parts[1]
 
+			// Include sender's username in the message before encryption
+			messageWithSender := fmt.Sprintf("%s: %s", sender.username, privateMessage)
+
 			// Encrypt private message with sender's key
-			encryptedMsg, err := encrypt(privateMessage, sender.key)
+			encryptedMsg, err := encrypt(messageWithSender, sender.key)
 			if err != nil {
 				log.Printf("Encryption error: %v", err)
 				return
@@ -258,7 +261,7 @@ func (room *Room) broadcast(message []byte, sender *Client) {
 			for client := range room.clients {
 				if client.username == targetUsername {
 					// Re-encrypt message with recipient's key
-					reEncryptedMsg, err := encrypt(privateMessage, client.key)
+					reEncryptedMsg, err := encrypt(messageWithSender, client.key)
 					if err != nil {
 						log.Printf("Re-encryption error: %v", err)
 						return
