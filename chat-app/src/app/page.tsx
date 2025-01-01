@@ -73,8 +73,12 @@ export default function Chat() {
           const decryptedContent = await decryptMessage(encryptedPart, encryptionKeyRef.current);
           const newMessage: Message = {
             id: Date.now(),
-            username: 'Private Message',
-            content: decryptedContent,
+            username: decryptedContent.includes(':') 
+              ? `🔒 ${decryptedContent.split(':')[0]}`
+              : `🔒 ${decryptedContent}`,
+            content: decryptedContent.includes(':') 
+              ? decryptedContent.split(':')[1] 
+              : decryptedContent,
             type: 'private',
             timestamp: new Date()
           };
@@ -86,7 +90,7 @@ export default function Chat() {
         const decryptedContent = await decryptMessage(e.data, encryptionKeyRef.current);
         const newMessage: Message = {
           id: Date.now(),
-          username: decryptedContent.includes(':') ? decryptedContent.split(':')[0] : 'System',
+          username: decryptedContent.includes(':') ? decryptedContent.split(':')[0] : decryptedContent,
           content: decryptedContent.includes(':') ? decryptedContent.split(':')[1] : decryptedContent,
           type: decryptedContent.includes('[Private]') ? 'private' : 
                 decryptedContent.includes('joined') ? 'system' : 'message',
