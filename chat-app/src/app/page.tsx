@@ -179,7 +179,7 @@ export default function Chat() {
     <div className="flex flex-col h-screen bg-gray-100">
       <header className="bg-orange-600 text-white p-4 shadow-md">
         <div className="max-w-3xl mx-auto flex items-center">
-          <h1 className="text-2xl font-bold">🚀gofastChat</h1>
+          <h1 className="text-2xl font-bold">fastChat🔥</h1>
           <span className="ml-4 bg-orange-500 px-3 py-1 rounded-full text-sm">
             {username}
           </span>
