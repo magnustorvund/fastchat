@@ -33,6 +33,7 @@ type Client struct {
 type Room struct {
 	clients map[*Client]bool
 	mutex   sync.Mutex
+	users   map[string]bool // Track connected users
 }
 
 type Command struct {
@@ -128,6 +129,7 @@ func decrypt(encrypted string, key []byte) (string, error) {
 func NewRoom() *Room {
 	return &Room{
 		clients: make(map[*Client]bool),
+		users:   make(map[string]bool),
 	}
 }
 
@@ -330,6 +332,7 @@ func handleConnections(room *Room, w http.ResponseWriter, r *http.Request) {
 
 	room.mutex.Lock()
 	room.clients[client] = true
+	room.users[client.username] = true
 	room.mutex.Unlock()
 
 	// Send the client their encryption key
@@ -346,6 +349,7 @@ func handleConnections(room *Room, w http.ResponseWriter, r *http.Request) {
 			log.Printf("Read error: %v", err)
 			room.mutex.Lock()
 			delete(room.clients, client)
+			delete(room.users, client.username)
 			room.mutex.Unlock()
 			conn.Close()
 			break

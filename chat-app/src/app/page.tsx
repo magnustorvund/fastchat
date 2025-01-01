@@ -24,6 +24,8 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const encryptionKeyRef = useRef<Uint8Array | null>(null)
   const [showCommands, setShowCommands] = useState(false)
+  const [showUsers, setShowUsers] = useState(false)
+  const [connectedUsers, setConnectedUsers] = useState<string[]>([])
 
   useEffect(() => {
     const name = prompt('Enter your username:') || 'Anonymous'
@@ -66,6 +68,12 @@ export default function Chat() {
         return;
       }
 
+      if (e.data.startsWith('USERLIST:')) {
+        const users = e.data.replace('USERLIST:', '').split(',');
+        setConnectedUsers(users);
+        return;
+      }
+
       try {
         // Check if it's a private message
         if (e.data.startsWith('[Private')) {
@@ -98,6 +106,17 @@ export default function Chat() {
         }
 
         setMessages(prev => [...prev, newMessage])
+
+        // Handle system messages for user updates
+        if (decryptedContent.includes('joined the chat') || decryptedContent.includes('left the chat')) {
+          // Extract username from system message
+          const user = decryptedContent.split(' ')[0];
+          if (decryptedContent.includes('joined')) {
+            setConnectedUsers(prev => [...new Set([...prev, user])]);
+          } else {
+            setConnectedUsers(prev => prev.filter(u => u !== user));
+          }
+        }
       } catch (error) {
         console.error("Error processing message:", error);
       }
@@ -173,6 +192,9 @@ export default function Chat() {
     
     // Show commands when typing '/'
     setShowCommands(value.startsWith('/'))
+    
+    // Show users when typing '@'
+    setShowUsers(value.startsWith('@'))
   }
 
   return (
@@ -248,6 +270,23 @@ export default function Chat() {
                       <div className="font-medium text-black">/{cmd.name}</div>
                       <div className="text-sm text-gray-500">{cmd.description}</div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {showUsers && (
+              <div className="absolute bottom-full mb-2 w-full bg-white rounded-lg shadow-lg border p-2">
+                {connectedUsers.map(user => (
+                  <div
+                    key={user}
+                    className="p-2 hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => {
+                      setInputMessage(`@${user.replace(':', '')} `);
+                      setShowUsers(false);
+                    }}
+                  >
+                    <div className="font-medium text-black">@{user.replace(':', '')}</div>
                   </div>
                 ))}
               </div>
